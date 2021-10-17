@@ -24,3 +24,12 @@ class Table:
         else:
             for i in range(self.n_cols):
                 self.data[i][:] = df.iloc[:, i].values[:].astype(self.dtypes[i])
+
+
+def create_slice(table, idx):
+    result = Table(table.schema, len(idx), table.name, table.storage)
+    if result.storage == "column":
+        result.data = [col[idx] for col in table.data]
+    else:
+        result.data = table.data[idx]
+    return result
