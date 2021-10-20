@@ -1,46 +1,6 @@
-import numpy as np
-import pandas as pd
-
-
-class Table:
-    def __init__(self, schema, n_rows, name, storage="row"):
-        self.name = name
-        self.n_cols = len(schema)
-        self.storage = storage
-        self.schema = schema
-        self.col_names = [p[0] for p in schema.items()]
-        self.dtypes = [p[1] for p in schema.items()]
-        self.n_rows = n_rows
-        if self.storage == "row":
-            self.data = np.empty(self.n_rows, dtype=object)
-        else:
-            self.data = [np.empty(self.n_rows, dtype=column[1]) for column in self.schema.items()]
-
-    def load_csv(self, filename):
-        df = pd.read_csv(filename, delimiter='|', header=None).iloc[:, :-1]
-        self.n_rows = len(df)
-        if self.storage == "row":
-            self.data = df.values
-        else:
-            for i in range(self.n_cols):
-                self.data[i][:] = df.iloc[:, i].values[:].astype(self.dtypes[i])
-
-#%%
-nation_schema = {
-    "N_NATIONKEY": int,
-    "N_NAME": '<U25',
-    "N_REGIONKEY": int,
-    "N_COMMENT": '<U152'}
-              
-nation = Table(nation_schema, 25, "NATION",'column')
-nation.load_csv('TPCH-data/SF-0.5/nation.csv')
-
-#%%
-#print(nation.col_names)
-"""
-for index,name in enumerate(nation.col_names):
-    if (nation.col_names == index_1):
-"""        
+from Table import Table 
+from schemas import *
+     
 
 def recup_index_lig (tab,Nom):
     for index,element in enumerate(tab.col_names):
@@ -74,27 +34,41 @@ def recup_index_col2 (tab,lig,test):
     return liste
 
 
-# hash phase
+def join(tab1,key1,tab2,key2):
+    tab = []
+    indexlig = recup_index_lig(tab1, key1)
+    indexlig2 = recup_index_lig2(tab2, key2)
+    test = list(set(tab1.data[indexlig][:]))
+    
+    #enlever les doublons
+    
+    for key in test : 
+        index = recup_index_col(tab1, indexlig,key)
+        index2 = recup_index_col2(tab2, indexlig2,key)
+        for i in range (len(index)):
+            for j in range (len(index2)):
+                temp = []
+                temp.append(key)
+                for k in range(len(tab1.col_names)):
+                    if (k != indexlig):
+                        temp.append(tab1.data[k][index[i]])
+                        
+                for k2 in range(len(tab2.col_names)):
+                    if (k2 != indexlig2):
+                        temp.append(tab2.data[k2][index2[j]])
+        
+                tab.append(temp)
+    #print([h[r[0]] for r in table2])   
+    return tab
+
+
+nation = Table(nation_schema, 25, "NATION",'column')
+nation.load_csv('TPCH-data/SF-0.5/nation.csv')
+
+region = Table(region_schema, 5, "REGION",'column')
+region.load_csv('TPCH-data/SF-0.5/region.csv')
 
 mot = "N_REGIONKEY"
-test = 1 
-tab = []
-indexlig = recup_index_lig(nation, mot)
-indexlig2 = recup_index_lig2(nation, mot)
-index = recup_index_col(nation, indexlig,test)
-index2 = recup_index_col2(nation, indexlig2,test)
-for i in range (len(index)):
-    for j in range (len(index2)):
-        temp = []
-        temp.append(test)
-        temp.append(nation.data[0][index[i]])
-        temp.append(nation.data[1][index[i]])
-        #temp.append(nation.data[2][index[i]])
-        temp.append(nation.data[3][index[i]])
-        temp.append(nation.data[0][index2[i]])
-        temp.append(nation.data[1][index2[i]])
-        #temp.append(nation.data[2][index[i]])
-        temp.append(nation.data[3][index2[i]])
-        tab.append(temp)
-#print([h[r[0]] for r in table2])
-print(tab)
+mot2 = "R_REGIONKEY"  
+
+joined_tab = join(nation,mot,region,mot2)
