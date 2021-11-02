@@ -62,13 +62,13 @@ def join(tab1,key1,tab2,key2):
     return tab
 
 
-nation = Table(nation_schema, 25, "NATION",'column')
-nation.load_csv('TPCH-data/SF-0.5/nation.csv')
+#nation = Table(nation_schema, 25, "NATION",'column')
+#nation.load_csv('TPCH-data/SF-0.5/nation.csv')
 
-region = Table(region_schema, 5, "REGION",'column')
-region.load_csv('TPCH-data/SF-0.5/region.csv')
+#region = Table(region_schema, 5, "REGION",'column')
+#region.load_csv('TPCH-data/SF-0.5/region.csv')
 
-mot = "N_REGIONKEY"
-mot2 = "R_REGIONKEY"  
+#mot = "N_REGIONKEY"
+#mot2 = "R_REGIONKEY"
 
-joined_tab = join(nation,mot,region,mot2)
+#joined_tab = join(nation,mot,region,mot2)
