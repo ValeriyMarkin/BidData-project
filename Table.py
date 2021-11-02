@@ -24,3 +24,15 @@ class Table:
         else:
             for i in range(self.n_cols):
                 self.data[i][:] = df.iloc[:, i].values[:].astype(self.dtypes[i])
+    
+    def fill_data(self,listname):
+        if self.storage == 'row' :
+            #self.data = np.empty(shape = (self.n_rows, self.n_cols))
+            for i in range(self.n_rows):
+                for j in range (self.n_cols):
+                    
+                    self.data= listname[:,:]
+        else: 
+            for i in range(self.n_cols):
+                for j in range (self.n_rows):
+                    self.data[i][j] = listname[j][i]
