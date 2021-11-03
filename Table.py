@@ -3,6 +3,7 @@ import pandas as pd
 
 
 
+
 class Table:
     def __init__(self, schema, n_rows, name, storage="row", filename=None):
         self.name = name
@@ -26,6 +27,18 @@ class Table:
             
         else:
             self.data = None
+
+    def __iter__(self):
+        self.n = 0
+        return self
+
+    def __next__(self):
+        if self.n < self.n_rows:
+            res = self.data[self.n]
+            self.n += 1
+            return res
+        else:
+            raise StopIteration
 
     def load_csv(self, filename):
         df = pd.read_csv(filename, delimiter='|', header=None).iloc[:, :-1]
@@ -110,6 +123,10 @@ class Table:
 
             return projected_view
 
+#class SparkTable:
+
+
+
 
 def create_slice(table, idx):
     result = Table(table.schema, len(idx), table.name, table.storage)
@@ -118,6 +135,8 @@ def create_slice(table, idx):
     else:
         result.data = table.data[idx]
     return result
+
+
 
 
 def index_duplicate(a, index_to_explore=None):
