@@ -43,10 +43,12 @@ class Table:
     def load_csv(self, filename):
         df = pd.read_csv(filename, delimiter='|', header=None).iloc[:, :-1]
         self.n_rows = len(df)
+
         self.filename = filename
         if self.storage == "row":
             self.data = df.values
         else:
+            self.data = [np.empty(self.n_rows, dtype=column[1]) for column in self.schema.items()]
             for i in range(self.n_cols):
                 self.data[i][:] = df.iloc[:, i].values[:].astype(self.dtypes[i])
 
@@ -267,3 +269,27 @@ def from_rows_to_columns(r, schema):
             c[i][j] = r[j][i]
 
     return c
+
+
+class SparkTable:
+    def __init__(self, table, sc):
+        assert table.storage == "row", "Only row storage is supported!"
+        self.name = table.name
+        self.n_cols = table.n_cols
+        self.schema = table.schema
+        self.col_names = table.col_names
+        self.dtypes = table.dtypes
+        self.n_rows = table.n_rows
+        self.filename = table.filename
+
+        self.view_number = 0
+        self.col_index = {}
+        for i, col in enumerate(self.col_names):
+            self.col_index[col] = i
+
+        self.rdd = sc.parallelize(table)
+
+    def restore(self):
+        result = Table(self.schema, self.n_rows, self.name, "row")
+        result.data = np.array(self.rdd.collect())
+        return result
