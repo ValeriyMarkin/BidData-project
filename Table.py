@@ -303,7 +303,8 @@ class SparkTable:
         :param columns: name of the columns selected to perform the projection.
         :type b: List of string
         :return: The view of the SparkTable projected on the selected columns.
-        :rtype: Table
+        :rtype: SparkTableTable
         """
         projected_view = self.restore().projection(columns)
         return SparkTable(projected_view, self.sc)
+
