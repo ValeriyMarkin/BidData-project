@@ -135,7 +135,7 @@ class Table:
 
             return projected_view
 
-#class SparkTable:
+
 
 
 
@@ -281,6 +281,7 @@ class SparkTable:
         self.dtypes = table.dtypes
         self.n_rows = table.n_rows
         self.filename = table.filename
+		self.sc = sc
 
         self.view_number = 0
         self.col_index = {}
@@ -293,3 +294,16 @@ class SparkTable:
         result = Table(self.schema, self.n_rows, self.name, "row")
         result.data = np.array(self.rdd.collect())
         return result
+
+	def projection(self, columns):
+        """
+        projection
+        Projects the data of the SparkTable keeping only the columns given as arguments
+        and returns a new table without duplicate row
+        :param columns: name of the columns selected to perform the projection.
+        :type b: List of string
+        :return: The view of the SparkTable projected on the selected columns.
+        :rtype: Table
+        """
+        projected_view = self.restore().projection(columns)
+        return SparkTable(projected_view, self.sc)
