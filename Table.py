@@ -124,12 +124,14 @@ class Table:
             else:
                 if len(List_index_to_delete) != 0:
                     k = -1
+                    projected_view.data = [np.empty(projected_view.n_rows, dtype=column[1]) for column in projected_view.schema.items()]
                     for i in range(self.n_rows):
                         if i not in List_index_to_delete:
                             k += 1
                             for j, col in enumerate(columns):
                                 projected_view.data[j][k] = self.data[self.col_index[col]][i]
                 else:
+                    projected_view.data = [np.empty(projected_view.n_rows, dtype=column[1]) for column in projected_view.schema.items()]
                     for j, col in enumerate(columns):
                         projected_view.data[j][:] = self.data[self.col_index[col]][:]
 
