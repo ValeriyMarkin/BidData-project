@@ -284,7 +284,7 @@ class SparkTable:
         self.n_rows = table.n_rows
         self.filename = table.filename
         self.sc = sc
-
+        
         self.view_number = 0
         self.col_index = {}
         for i, col in enumerate(self.col_names):
