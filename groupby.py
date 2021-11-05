@@ -1,4 +1,4 @@
-from Table import Table, create_slice
+from Table import Table,SparkTable, create_slice
 import numpy as np
 import threading
 
@@ -39,7 +39,7 @@ def groupby(table, by):
 
 def aggregate(grouped_t, group_key_name, col_to_aggr, func):
     result_schema = {
-        group_key_name: int,
+        group_key_name: grouped_t[list(grouped_t.keys())[0]].schema[group_key_name],
         col_to_aggr: float,
     }
     storage = grouped_t[list(grouped_t.keys())[0]].storage
@@ -55,6 +55,29 @@ def aggregate(grouped_t, group_key_name, col_to_aggr, func):
             result.data[1][i] = func(grouped_t[list(grouped_t.keys())[i]], col_to_aggr)
     return result
 
+
+def groupby_spark(table, by, aggregate, sc):
+    
+    by_index = table.col_names.index(by)
+    aggregate_index = table.col_names.index(aggregate)
+    spark_table = SparkTable(table,sc)
+    grouped = spark_table.rdd.map( lambda row: (row[by_index], row[aggregate_index]) ) 
+    Result = grouped.reduceByKey(lambda a, b :a+b)
+    
+    
+    Result = np.array(Result.collect())
+    
+    result_schema = {
+        by: table.schema[by],
+        aggregate: float,
+    }
+    storage = table.storage
+    result = Table(result_schema, len(list(Result)), "AGGR_" + aggregate, storage=storage)
+    result.data = Result
+    
+    return SparkTable(result,sc)
+    
+    
 
 def multithread_groupby(table, by, num_threads):
     threads_list = np.empty(num_threads, dtype=object)
@@ -97,7 +120,7 @@ def multithread_groupby(table, by, num_threads):
 
 def multithread_aggregate(grouped_t, group_key_name, col_to_aggr, func, num_threads):
     result_schema = {
-        group_key_name: int,
+        group_key_name: grouped_t[list(grouped_t.keys())[0]].schema[group_key_name],
         col_to_aggr: float,
     }
     storage = grouped_t[list(grouped_t.keys())[0]].storage
