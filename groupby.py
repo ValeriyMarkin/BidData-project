@@ -67,8 +67,8 @@ def groupby_spark(table, by, aggregate, sc):
     Result = np.array(Result)
     
     result_schema = {
-        group_key_name: table.schema[by],
-        col_to_aggr: float,
+        by: table.schema[by],
+        aggregate: float,
     }
     storage = table.storage
     result = Table(result_schema, len(Result), "AGGR_" + aggregate, storage=storage)
