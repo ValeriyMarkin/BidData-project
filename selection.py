@@ -1,4 +1,4 @@
-from Table import Table
+from Table import Table, SparkTable
 from utilities import mergeSort
 
 import operator
@@ -252,7 +252,7 @@ def diskSelection(table, attr, op, value):
 def multiThreadSelection(table, attr, op, value, num_threads):
 
     """
-    This function implements a simple version of the select operator on the Table class. Ideal when the data is not ordered.
+    This function implements a simple version of the select operator on the Table class using multiThread
     
     :param table: an object of class Table, on which the operation is performed
     :param attr: str, name of the column, based on which the values will be selected
@@ -311,3 +311,42 @@ def multiThreadSelection(table, attr, op, value, num_threads):
         result.data = [np.array(col) for col in r]
         
     return result
+
+
+def SparkSelection(table, attr, op, value, sc):
+
+    """
+    This function implements a simple version of the select operator in Spark.
+    
+    :param table: an object of class SparkTable, on which the operation is performed
+    :param attr: str, name of the column, based on which the values will be selected
+    :param op: str, operator that will be used to make the selection. Can be: “<”,”>”,”<=”,”>=”,”==”,”!=”
+    :param value: str, value to which our attribute will be compared
+    
+    :return: table, return another object of the class SparkTable, which satisfies the selection condition
+
+    """
+    
+    # Defining possible operations that will be passed to the function as strings
+    ops = {'>': operator.gt,
+       '<': operator.lt,
+       '>=': operator.ge,
+       '<=': operator.le,
+       '==': operator.eq,
+       '!=': operator.ne}
+    
+    selected=[]
+    # Determining the index of the attribute of interest
+    col = table.col_names.index(attr)
+    # Collecting data from spark 
+    for row in np.array(table.rdd.collect()):
+        if(ops[op](row[col],value)):
+                selected.append(row)
+                
+    # Creating new table and new SparkTable with result           
+    result_table = Table(table.schema, len(selected), "SELECTION_RESULT", storage="row")
+    result_table.data = np.array(selected)
+    
+    result_spark = SparkTable(result_table,sc)
+        
+    return result_spark
