@@ -60,11 +60,12 @@ def groupby_spark(table, by, aggregate):
     
     by_index = table.col_names.index(by)
     aggregate_index = table.col_names.index(aggregate)
-    grouped = table.rdd.map( lambda row: (row[by_index], row[aggregate_index]) ) 
+    spark_table = SparkTable(table,sc)
+    grouped = spark_table.rdd.map( lambda row: (row[by_index], row[aggregate_index]) ) 
     Result = grouped.reduceByKey(lambda a, b :a+b)
     
-    result_spark = SparkTable(Result,sc)
-    return result_spark
+    
+    return Result
 
 def multithread_groupby(table, by, num_threads):
     threads_list = np.empty(num_threads, dtype=object)
