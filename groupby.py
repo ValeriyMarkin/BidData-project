@@ -64,8 +64,19 @@ def groupby_spark(table, by, aggregate, sc):
     grouped = spark_table.rdd.map( lambda row: (row[by_index], row[aggregate_index]) ) 
     Result = grouped.reduceByKey(lambda a, b :a+b)
     
+    Result = np.array(Result)
     
-    return Result
+    result_schema = {
+        group_key_name: table.schema[by],
+        col_to_aggr: float,
+    }
+    storage = table.storage
+    result = Table(result_schema, len(Result), "AGGR_" + aggregate, storage=storage)
+    result.data = np.array(Result)
+    
+    result_spark = SparkTable(result,sc)
+    
+    return result_spark
 
 def multithread_groupby(table, by, num_threads):
     threads_list = np.empty(num_threads, dtype=object)
