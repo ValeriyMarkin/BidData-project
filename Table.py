@@ -251,7 +251,7 @@ def create_slice(table, idx):
 
 
 
-def index_duplicate(a, index_to_explore=None):
+def index_duplicate(a, index_to_explore=None, prefix_key=None):
     """
     index_duplicate
     Find the indexes of the duplicate values in a Numpy ndarray
@@ -263,6 +263,11 @@ def index_duplicate(a, index_to_explore=None):
                              Working on a subset of the array improves performance.
                              (default value=None: the whole array is explored)
     :type index_to_explore: list of int
+
+    param prefix_key: prefix added to the dictionary key to avoid duplicate keys. 
+                      This prefix is constructed from the keys constructed during the processing 
+                      of the previous column (default value=None)
+    :type prefix_key: string
 
     :return: A dictionary (dict_duplicate) which associates with each duplicated value
              its index in the Numpy array
@@ -286,10 +291,18 @@ def index_duplicate(a, index_to_explore=None):
     dict_duplicate = {}
     if index_to_explore is None:
         for i in range(len(list_duplicate_values)):
-            dict_duplicate[list_duplicate_values[i]] = np.where(a == list_duplicate_values[i])
+            if prefix_key is None:
+                key = list_duplicate_values[i]
+            else:
+                key = "{}{}".format(prefix_key, list_duplicate_values[i])
+            dict_duplicate[key] = np.where(a == list_duplicate_values[i])
     else:
         for i in range(len(list_duplicate_values)):
-            dict_duplicate[list_duplicate_values[i]] = np.intersect1d(np.where(a == list_duplicate_values[i]),
+            if prefix_key is None:
+                key = list_duplicate_values[i]
+            else:
+                key = "{}{}".format(prefix_key, list_duplicate_values[i])
+            dict_duplicate[key] = np.intersect1d(np.where(a == list_duplicate_values[i]),
                                                                       index_to_explore)
 
     return dict_duplicate
@@ -328,7 +341,8 @@ def get_index_to_delete(b):
         dict_duplicate_1 = dict_duplicate_2
         dict_duplicate_2 = {}
         for key in dict_duplicate_1:
-            dict_duplicate_2.update(index_duplicate(b[i], dict_duplicate_1[key]))
+            prefix_key = "__{}__".format(key)
+            dict_duplicate_2.update(index_duplicate(b[i], dict_duplicate_1[key], prefix_key=prefix_key))
         if dict_duplicate_2 == {}: return index_to_delete
 
     for key in dict_duplicate_2:
