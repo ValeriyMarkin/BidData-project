@@ -1,4 +1,4 @@
-from Table import Table, create_slice
+from Table import Table,SparkTable, create_slice
 import numpy as np
 import threading
 
