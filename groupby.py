@@ -64,19 +64,18 @@ def groupby_spark(table, by, aggregate, sc):
     grouped = spark_table.rdd.map( lambda row: (row[by_index], row[aggregate_index]) ) 
     Result = grouped.reduceByKey(lambda a, b :a+b)
     
-    return Result
     
-    Result = np.array(Result)
+    Result = np.array(Result.collect())
     
     result_schema = {
         by: table.schema[by],
         aggregate: float,
     }
     storage = table.storage
-    result = Table(result_schema, table.n_rows, "AGGR_" + aggregate, storage=storage)
-    result.data = np.array(Result)
+    result = Table(result_schema, len(list(Result)), "AGGR_" + aggregate, storage=storage)
+    result.data = Result
     
-    result_spark = SparkTable(result,sc)
+    return SparkTable(result,sc)
     
     
 
