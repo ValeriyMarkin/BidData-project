@@ -56,7 +56,7 @@ def aggregate(grouped_t, group_key_name, col_to_aggr, func):
     return result
 
 
-def groupby_spark(table, by, aggregate):
+def groupby_spark(table, by, aggregate, sc):
     
     by_index = table.col_names.index(by)
     aggregate_index = table.col_names.index(aggregate)
