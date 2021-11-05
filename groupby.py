@@ -97,7 +97,7 @@ def multithread_groupby(table, by, num_threads):
 
 def multithread_aggregate(grouped_t, group_key_name, col_to_aggr, func, num_threads):
     result_schema = {
-        group_key_name: int,
+        group_key_name: grouped_t[list(grouped_t.keys())[0]].schema[group_key_name],
         col_to_aggr: float,
     }
     storage = grouped_t[list(grouped_t.keys())[0]].storage
