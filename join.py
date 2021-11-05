@@ -1,6 +1,7 @@
 from Table import Table
 import numpy as np
 from schemas import *
+import threading
 
 def recup_index_lig(tab, Nom):
     for index, element in enumerate(tab.col_names):
@@ -109,6 +110,8 @@ def join_multithread(tab1, key1, tab2, key2, num_threads):
     # Waiting for all threads to finish
     for t in threads_list:
         t.join()
+        
+    return joint
 
 def join(tab1, key1, tab2, key2):
     test_scheme = {**tab1.schema, **tab2.schema}
