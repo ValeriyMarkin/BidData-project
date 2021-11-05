@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-
+from hdfs import InsecureClient
 
 
 
@@ -63,6 +63,103 @@ class Table:
                 for j in range (self.n_rows):
                     self.data[i][j] = listname[j][i]
 
+    def read_from_hdfs(self, file_name, host):
+        client_hdfs = InsecureClient(host)
+        with client_hdfs.read('/user/root/tables'+file_name) as reader:
+            df = pd.read_csv(reader,index_col=0)
+        self.n_rows = len(df)
+        self.filename = file_name
+        if self.storage == "row":
+            self.data = df.values
+        else:
+            for i in range(self.n_cols):
+                self.data[i][:] = df.iloc[:, i].values[:].astype(self.dtypes[i])
+    
+    def projection_multithread(self, columns, num_threads):
+            """
+            projection
+            Projects the data of the table keeping only the columns given as arguments
+            and returns a new table without duplicate row (multithreading)
+            :param columns: name of the columns selected to perform the projection.
+            :type b: List of string
+            :return: The view of the table projected on the selected columns.
+            :rtype: Table
+            """
+            # Construction of the name of the projected view
+            self.view_number += 1
+            view_name = "{}_View_{}".format(self.name, self.view_number)
+
+            # Construction of the schema of the projected view
+            projected_schema = {}
+            for col in columns:
+                projected_schema[col] = self.schema[col]
+
+            # Extraction of the data corresponding to the selected columns
+            if self.storage == "row":
+                selected_data = np.empty(self.n_rows, dtype=object)
+                sel_col = []
+                for col in columns:
+                    sel_col.append(self.col_index[col])
+
+                for i in range(self.n_rows):
+                    selected_data[i] = self.data[i][sel_col]
+            else:
+                selected_data = []
+                for col in columns:
+                    selected_data.append(self.data[self.col_index[col]][:])
+
+            # Deletion of the duplicate rows
+            if self.storage == "row":
+                # We transpose the data to find the duplicate rows ('np.unique' or 'set' doesn't work with data of type object)
+                List_index_to_delete = get_index_to_delete(from_rows_to_columns(selected_data, projected_schema))
+            else:
+                List_index_to_delete = get_index_to_delete(selected_data)
+
+            Nb_rows = self.n_rows - len(List_index_to_delete)
+
+            # View construction
+            projected_view = Table(projected_schema, Nb_rows, view_name, storage=self.storage)
+
+            # Updating the data of the projected view
+            
+            threads_list = np.empty(num_threads, dtype=object)
+            threads_row = np.array_split(np.array(range(self.n_rows)), num_threads)
+            
+            def single_thread(row, a):
+                
+                if self.storage == "row":
+                    if len(List_index_to_delete) != 0:
+                        k = -1
+                        for i in row:
+                            if i not in List_index_to_delete:
+                                k += 1
+                                projected_view.data[k] = selected_data[i]
+                    else:
+                        projected_view.data = selected_data
+                else:
+                    if len(List_index_to_delete) != 0:
+                        k = -1
+                        for i in row:
+                            if i not in List_index_to_delete:
+                                k += 1
+                                for j, col in enumerate(columns):
+                                    projected_view.data[j][k] = self.data[self.col_index[col]][i]
+                    else:
+                        for j, col in enumerate(columns):
+                            projected_view.data[j][:] = self.data[self.col_index[col]][:]
+
+            for i in range(num_threads):
+                threads_list[i] = threading.Thread(target=single_thread, args=(threads_row[i], 1))
+
+            # Starting Threads
+            for t in threads_list:
+                t.start()
+            # Waiting for all threads to finish
+            for t in threads_list:
+                t.join()
+            
+            return projected_view
+    
     def projection(self, columns):
             """
             projection
