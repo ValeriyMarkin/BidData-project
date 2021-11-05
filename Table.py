@@ -72,6 +72,7 @@ class Table:
         if self.storage == "row":
             self.data = df.values
         else:
+            self.data = [np.empty(self.n_rows, dtype=column[1]) for column in self.schema.items()]
             for i in range(self.n_cols):
                 self.data[i][:] = df.iloc[:, i].values[:].astype(self.dtypes[i])
     
