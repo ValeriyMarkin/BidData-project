@@ -71,7 +71,7 @@ def groupby_spark(table, by, aggregate, sc):
         aggregate: float,
     }
     storage = table.storage
-    result = Table(result_schema, len(Result), "AGGR_" + aggregate, storage=storage)
+    result = Table(result_schema, len(list(Result)), "AGGR_" + aggregate, storage=storage)
     result.data = np.array(Result)
     
     result_spark = SparkTable(result,sc)
