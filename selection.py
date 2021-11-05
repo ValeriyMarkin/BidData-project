@@ -313,7 +313,7 @@ def multiThreadSelection(table, attr, op, value, num_threads):
     return result
 
 
-def SparkSelection(table, attr, op, value, sc):
+def sparkSelection(table, attr, op, value, sc):
 
     """
     This function implements a simple version of the select operator in Spark.
@@ -341,7 +341,7 @@ def SparkSelection(table, attr, op, value, sc):
     # Collecting data from spark 
     for row in np.array(table.rdd.collect()):
         if(ops[op](row[col],value)):
-                selected.append(row)
+            selected.append(row)
                 
     # Creating new table and new SparkTable with result           
     result_table = Table(table.schema, len(selected), "SELECTION_RESULT", storage="row")
