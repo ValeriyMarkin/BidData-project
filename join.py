@@ -1,18 +1,11 @@
 from Table import Table
 import numpy as np
-
+from schemas import *
 
 def recup_index_lig(tab, Nom):
     for index, element in enumerate(tab.col_names):
         if element == Nom:
             # print (index)
-            return index
-
-
-def recup_index_lig2(tab, Nom):
-    for index, element in enumerate(tab.col_names):
-        if element == Nom:
-            # print (liste)
             return index
 
 
@@ -30,20 +23,6 @@ def recup_index_col(tab, lig, test):
     return liste
 
 
-def recup_index_col2(tab, lig, test):
-    liste = []
-    if (tab.storage == 'row'):
-        for i in range(tab.data.shape[0]):
-            if (tab.data[i][lig] == test):
-                liste.append(i)
-    else:
-        for i in range(len(tab.data[lig])):
-            if (tab.data[lig][i] == test):
-                liste.append(i)
-        # print(liste)
-    return liste
-
-
 def join_multithread(tab1, key1, tab2, key2, num_threads):
     test_scheme = {**tab1.schema, **tab2.schema}
     del test_scheme[key2]
@@ -51,7 +30,7 @@ def join_multithread(tab1, key1, tab2, key2, num_threads):
     n_rows = max(tab1.n_rows, tab2.n_rows)
     
     indexlig = recup_index_lig(tab1, key1)
-    indexlig2 = recup_index_lig2(tab2, key2)
+    indexlig2 = recup_index_lig(tab2, key2)
     joint = Table(test_scheme, n_rows, tab1.name + " " + tab2.name, tab1.storage)
     if tab1.storage == "row":
         test = list(set(tab1.data[:, indexlig]))
@@ -76,7 +55,7 @@ def join_multithread(tab1, key1, tab2, key2, num_threads):
     
             for t,key in enumerate(tt):
                 index = recup_index_col(tab1, indexlig, key)
-                index2 = recup_index_col2(tab2, indexlig2, key)
+                index2 = recup_index_col(tab2, indexlig2, key)
                 for i in range(len(index)):
                     
                     for j in range(len(index2)):
@@ -101,7 +80,7 @@ def join_multithread(tab1, key1, tab2, key2, num_threads):
                 res1=[]
                 res2 = []
                 index = recup_index_col(tab1, indexlig, key)
-                index2 = recup_index_col2(tab2, indexlig2, key)
+                index2 = recup_index_col(tab2, indexlig2, key)
                 for i in range(len(index)):
                     for j in range(len(index2)):
                         temp = []
@@ -136,13 +115,13 @@ def join(tab1, key1, tab2, key2):
     del test_scheme[key2]
     tab = []
     indexlig = recup_index_lig(tab1, key1)
-    indexlig2 = recup_index_lig2(tab2, key2)
+    indexlig2 = recup_index_lig(tab2, key2)
 
     if (tab1.storage == 'row'):
         test = list(set(tab1.data[:, indexlig]))
         for key in test:
             index = recup_index_col(tab1, indexlig, key)
-            index2 = recup_index_col2(tab2, indexlig2, key)
+            index2 = recup_index_col(tab2, indexlig2, key)
             for i in range(len(index)):
                 for j in range(len(index2)):
                     temp = []
@@ -163,7 +142,7 @@ def join(tab1, key1, tab2, key2):
         test = list(set(tab1.data[indexlig][:]))
         for key in test:
             index = recup_index_col(tab1, indexlig, key)
-            index2 = recup_index_col2(tab2, indexlig2, key)
+            index2 = recup_index_col(tab2, indexlig2, key)
             for i in range(len(index)):
                 for j in range(len(index2)):
                     temp = []
