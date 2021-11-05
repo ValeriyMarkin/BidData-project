@@ -56,8 +56,10 @@ def aggregate(grouped_t, group_key_name, col_to_aggr, func):
     return result
 
 
-def groupby_spark(table, by_index, aggregate_index, func):
+def groupby_spark(table, by, aggregate):
     
+    by_index = table.col_names.index(by)
+    aggregate_index = table.col_names.index(aggregate)
     grouped = table.rdd.map( lambda row: (row[by_index], row[aggregate_index]) ) 
     Result = grouped.reduceByKey(lambda a, b :a+b)
     
