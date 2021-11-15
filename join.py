@@ -216,25 +216,3 @@ def hash_join(tab1, key1, tab2, key2):
     """
         
     return joint
-
-#%%
-nation = Table(nation_schema, 25, "NATION",'col')
-nation.load_csv('TPCH-data/SF-0.5/nation.csv')
-
-region = Table(region_schema, 5, "REGION",'col')
-region.load_csv('TPCH-data/SF-0.5/region.csv')
-mot = "R_REGIONKEY"
-mot2 = "N_REGIONKEY" 
-hj = hash_join(region,mot,nation,mot2)
-    
-#%%
-customer = Table(customer_schema,7500, "CUSTOMER", storage="col")
-customer.load_csv('TPCH-data/SF-0.5/customer.csv')
-
-orders = Table(orders_schema,75000, "ORDERS", storage="col")
-orders.load_csv('TPCH-data/SF-0.5/orders.csv')
-
-mot = "C_CUSTKEY"
-mot2 = "O_CUSTKEY"
-
-x = hash_join(customer,mot,orders,mot2)
