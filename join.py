@@ -161,3 +161,80 @@ def join(tab1, key1, tab2, key2):
         joint = Table(test_scheme, len(tab), tab1.name + " " + tab2.name, tab1.storage)
         joint.fill_data(tab)
     return joint
+
+    
+def hash_join(tab1, key1, tab2, key2):
+    test_scheme = {**tab1.schema, **tab2.schema}
+    del test_scheme[key2]
+    tab = []
+    temp = []
+    indexlig2 = recup_index_lig(tab2, key2)
+    dico = {}
+    if (tab1.storage == 'row'):
+        for i,val in enumerate (tab1.data[:,:]): #creation du dico avec l'index comme clé qui est la mm que key1
+            dico[i]=val
+        for i in range (len(tab2.data[:,indexlig2])): #parcours le 2 eme tableau
+            if tab2.data[i,indexlig2] in dico : #si la clé correspond a une cle du dico 
+                temp = list(dico[tab2.data[i,indexlig2]])+list(tab2.data[i,:]) #on entre les val des 2 tables dans la liste
+                del temp[tab1.n_cols+indexlig2]
+            tab.append(temp)
+            
+        joint = Table(test_scheme, np.array(tab).shape[0], tab1.name + " " + tab2.name, tab1.storage)
+        joint.fill_data(np.array(tab))
+    
+    else : 
+        T1 = np.array(tab1.data).T 
+        T2 = np.array(tab2.data).T 
+        for i,val in enumerate (T1):
+            dico[i]=val   
+        for i in range (len(T2[:,indexlig2])):
+            
+            if (int(T2[i,indexlig2]) in dico):
+
+                temp = list(dico[int(T2[i,indexlig2])])+list(T2[i,:])
+                del temp[tab1.n_cols+indexlig2]
+            tab.append(temp)
+            
+        joint = Table(test_scheme, len(tab), tab1.name + " " + tab2.name, tab1.storage)
+        joint.fill_data(tab)
+    """
+    else : 
+    T1 = np.array(tab1.data)
+    T2 = np.array(tab2.data)
+    for i in range (len(tab1.data[indexlig][:])):
+        dico[i]= T1[:,i]
+    
+    for i in range (len(tab2.data[indexlig2][:])): 
+        if (tab2.data[indexlig2][i] in dico):
+            
+            temp = list(dico[tab2.data[indexlig2][i]])+list(T2[:,i])
+            del temp[tab1.n_cols+indexlig2]
+            #temp = np.c_[dico[tab2.data[i,indexlig2]].reshape((a,1)).T,tab2.data[i,:].reshape((b,1)).T]
+        tab.append(temp)
+    joint = Table(test_scheme, len(tab), tab1.name + " " + tab2.name, tab1.storage)
+    joint.fill_data(tab)
+    """
+        
+    return joint
+
+#%%
+nation = Table(nation_schema, 25, "NATION",'col')
+nation.load_csv('TPCH-data/SF-0.5/nation.csv')
+
+region = Table(region_schema, 5, "REGION",'col')
+region.load_csv('TPCH-data/SF-0.5/region.csv')
+mot = "R_REGIONKEY"
+mot2 = "N_REGIONKEY" 
+hj = hash_join(region,mot,nation,mot2)
+    
+#%%
+customer = Table(customer_schema,7500, "CUSTOMER", storage="col")
+customer.load_csv('TPCH-data/SF-0.5/customer.csv')
+
+orders = Table(orders_schema,75000, "ORDERS", storage="col")
+orders.load_csv('TPCH-data/SF-0.5/orders.csv')
+
+mot = "C_CUSTKEY"
+mot2 = "O_CUSTKEY"
+
+x = hash_join(customer,mot,orders,mot2)
