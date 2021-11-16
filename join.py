@@ -177,7 +177,7 @@ def hash_join(tab1, key1, tab2, key2):
             if tab2.data[i,indexlig2] in dico : #si la clé correspond a une cle du dico 
                 temp = list(dico[tab2.data[i,indexlig2]])+list(tab2.data[i,:]) #on entre les val des 2 tables dans la liste
                 del temp[tab1.n_cols+indexlig2]
-            tab.append(temp)
+                tab.append(temp)
             
         joint = Table(test_scheme, np.array(tab).shape[0], tab1.name + " " + tab2.name, tab1.storage)
         joint.fill_data(np.array(tab))
@@ -193,7 +193,7 @@ def hash_join(tab1, key1, tab2, key2):
 
                 temp = list(dico[int(T2[i,indexlig2])])+list(T2[i,:])
                 del temp[tab1.n_cols+indexlig2]
-            tab.append(temp)
+                tab.append(temp)
             
         joint = Table(test_scheme, len(tab), tab1.name + " " + tab2.name, tab1.storage)
         joint.fill_data(tab)
